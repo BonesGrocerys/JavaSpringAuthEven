@@ -21,6 +21,12 @@ public class User {
     private String password;
     @Column(name = "email")
     private String email;
+    @Column(name = "confirm_status")
+    private Boolean confirm_status;
+    @Column(name = "confirm_code")
+    private String confirm_code;
+    @Column(name = "password_code")
+    private String password_code;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_privileges",
@@ -62,5 +68,29 @@ public class User {
 
     public Long getId() {
         return id;
+    }
+
+    public Boolean getConfirmStatus() {
+        return confirm_status;
+    }
+
+    public void setConfirmStatus(Boolean confirm_status) {
+        this.confirm_status = confirm_status;
+    }
+
+    public String getConfirmCode() {
+        return confirm_code;
+    }
+
+    public void setConfirmCode(String confirm_code) {
+        this.confirm_code = confirm_code;
+    }
+
+    public String getPasswordCode() {
+        return password_code;
+    }
+
+    public void setPasswordCode(String password_code) {
+        this.password_code = password_code;
     }
 }

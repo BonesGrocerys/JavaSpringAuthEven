@@ -10,4 +10,10 @@ public interface UserService {
     Long findUserIdByUsername(String username);
     Long findIdPrivilegeByName(String name);
     User updateUserName(Long userId, String newName);
+    String getConfirmCode (Long userId);
+    Boolean getConfirmStatus(Long userId);
+    void setConfirmStatusTrue(Long userId);
+    boolean addPasswordCode(String username, String passwordCode);
+    boolean updatePassword(String username, String newPassword);
+    String getConfirmPasswordCode (Long userId);
 }

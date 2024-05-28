@@ -104,4 +104,60 @@ public class UserServiceImpl implements UserService {
         user.setName(newName);
         return userRepository.save(user);
     }
+
+    @Override
+    public String getConfirmCode(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
+        return user.getConfirmCode();
+    }
+
+    @Override
+    public Boolean getConfirmStatus(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
+        return user.getConfirmStatus();
+    }
+
+    @Override
+    public void setConfirmStatusTrue(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
+
+        // Устанавливаем поле confirm_status в true
+        user.setConfirmStatus(true);
+
+        // Сохраняем изменения в базе данных
+        userRepository.save(user);
+    }
+
+    @Override
+    public boolean addPasswordCode(String username, String passwordCode) {
+        User user = userRepository.findByUsername(username);
+
+        // Если пользователь найден, обновляем его код пароля и сохраняем в БД
+        if (user != null) {
+            user.setPasswordCode(passwordCode);
+            userRepository.save(user);
+            return true; // Успешно добавили код пароля
+        }
+
+        return false; // Пользователь не найден, код пароля не добавлен
+    }
+
+    @Override
+    public boolean updatePassword(String username, String newPassword) {
+        User user = userRepository.findByUsername(username);
+        if (user != null) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String getConfirmPasswordCode(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
+        return user.getPasswordCode();
+    }
+
+
 }
