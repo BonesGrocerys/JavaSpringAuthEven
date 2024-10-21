@@ -5,6 +5,7 @@ import com.boots.entity.User;
 import com.boots.repository.UserRepository;
 import com.boots.security.JwtTokenProvider;
 import com.boots.security.JwtUserDetailsService;
+import com.boots.service.IDateEventService;
 import com.boots.service.UserService;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +34,17 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
+    private final IDateEventService dateEventService;
     private final JwtUserDetailsService jwtUserDetailsService;
     private UserRepository userRepository;
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, UserService userService, JwtUserDetailsService jwtUserDetailsService) {
+    public AuthController(JavaMailSender emailSender, AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, UserService userService, IDateEventService dateEventService, JwtUserDetailsService jwtUserDetailsService) {
+        this.emailSender = emailSender;
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.userService = userService;
+        this.dateEventService = dateEventService;
         this.jwtUserDetailsService = jwtUserDetailsService;
     }
 
@@ -252,6 +256,41 @@ public class AuthController {
         User user = userService.findUserById(userId);
         String name = user.getName();
         return name;
+    }
+
+    @PostMapping("CreateDateEvent")
+    public ResponseEntity CreateDateEvent(@RequestHeader("token") String token, @RequestBody DateEventDto dateEventDto) {
+        try {
+        String username = jwtTokenProvider.getUsername(token);
+        Long userId = userService.findUserIdByUsername(username);
+        User user = userService.findUserById(userId);
+        dateEventService.createDateEventForUser(dateEventDto.getEventDate(), user);
+        return ResponseEntity.ok("Дата успешно добавлена");
+        }
+        catch (RuntimeException e) {
+            return new ResponseEntity(new Message("Произошла ошибка"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("events-dates")
+    public ResponseEntity<?> getUserEventDates(@RequestHeader("token") String token) {
+        try {
+            // Извлечение имени пользователя из токена
+            String username = jwtTokenProvider.getUsername(token);
+            // Получение ID пользователя по имени
+            Long userId = userService.findUserIdByUsername(username);
+            // Получение списка дат событий для пользователя
+            List<DateEventDto> eventDates = dateEventService.getEventDatesForUser(userId);
+
+            // Проверка на пустой список
+            if (eventDates.isEmpty()) {
+                return new ResponseEntity<>(new Message("Ничего не найдено"), HttpStatus.NOT_FOUND);
+            }
+
+            return ResponseEntity.ok(eventDates);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new Message("Произошла ошибка"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("validateToken")

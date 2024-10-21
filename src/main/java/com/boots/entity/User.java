@@ -34,7 +34,8 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "privilege_id")
     )
     private List<Privileges> privileges = new ArrayList<>();
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DateEvent> dateEvents;
 
     public void addPrivilege(Privileges privilege) {
         this.privileges.add(privilege);
