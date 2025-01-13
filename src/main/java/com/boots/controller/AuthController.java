@@ -50,6 +50,7 @@ public class AuthController {
 
     @Autowired
     private PlatformTransactionManager transactionManager;
+    Long currentUser;
     @PostMapping("registration")
     public ResponseEntity registration(@RequestBody RegistrationRequestDto requestDto){
         try{
@@ -61,12 +62,26 @@ public class AuthController {
                 sendEmail(email, confirmCode);
                 userService.register(registrationUser);
                 userService.addPrivilegeToUser(registrationUser.getId(), userService.findIdPrivilegeByName("user"));
+                currentUser = registrationUser.getId();
                 return ResponseEntity.ok(registrationUser.getId());
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Пользователь уже существует"));
 
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Произошла ошибка"));
+        }
+    }
+    @PostMapping("registration/result")
+    public ResponseEntity registrationResult(@RequestBody String result){
+        if (result.equals("false")) {
+            if (currentUser != null)
+            userService.deleteUser(currentUser);
+            return ResponseEntity.ok("Значение false успешно обработано на сервере Java");
+        } else if (result.equals("true")) {
+            // Логика для обработки значения "true"
+            return ResponseEntity.ok(" Регистрация прошла успешно");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Некорректное значение"));
         }
     }
 
@@ -85,18 +100,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("registration/result")
-    public ResponseEntity registrationResult(@RequestBody String result){
-        if (result.equals("false")) {
-            // Логика для обработки значения "false"
-            return ResponseEntity.ok("Значение false успешно обработано на сервере Java");
-        } else if (result.equals("true")) {
-            // Логика для обработки значения "true"
-            return ResponseEntity.ok(" Регистрация прошла успешно");
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Некорректное значение"));
-        }
-    }
+
 
 
 //    @PostMapping("login")
